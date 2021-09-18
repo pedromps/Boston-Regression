@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-# from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint
 # import seaborn as sns 
 
 # function to normalise in respect to training data. This means that the data
@@ -71,12 +71,14 @@ metric = "MAE"
 x_train, x_test, y_train, y_test = train_test_split(boston, boston_t, train_size = 0.8)
 
 #normalise in respect to the training data
-mode = "n" #<- "normal" to view normalised metrics, any other input for denormalised.
+mode = "n" #<- "normalised" to view normalised metrics, any other input for denormalised.
 x_train, x_test, y_train, y_test, y_params = normalise_to_train(x_train, x_test, y_train, y_test, mode)
 
+
+
 #the callback and model
-# checkpoint_filepath = "./tmp"
-# model_checkpoint_callback = ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, monitor='val_loss', mode='min', save_best_only=True)
+checkpoint_filepath = "./tmp"
+model_checkpoint_callback = ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, monitor='val_loss', mode='min', save_best_only=True)
 
 model = Sequential()
 model.add(Dense(64, input_dim = x_train.shape[1] , activation = 'relu'))
@@ -84,7 +86,7 @@ model.add(Dense(6, activation = 'relu'))
 model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 model.summary()
-history = model.fit(x_train, y_train, batch_size = 32, epochs=200, validation_split=0.125)
+history = model.fit(x_train, y_train, batch_size = 32, epochs=200, validation_split=0.125, callbacks=model_checkpoint_callback)
 
 #plotting
 plt.figure()
@@ -105,9 +107,7 @@ res = metric_calc(y_test, y_pred_nn, metric)
 print(metric+" of the data = ", res)
 
 
-
-
-#data with only the highly correlated dat, for the linear regression
+#data with only the highly correlated data, for the linear regression
 x_train_lin = x_train[aux.index]
 x_test_lin = x_test[aux.index]
 
