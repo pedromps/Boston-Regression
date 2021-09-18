@@ -30,7 +30,7 @@ x_train = (x_train-x_min)/(x_max-x_min)
 x_test = (x_test-x_min)/(x_max-x_min)
 
 y_train = (y_train-y_min)/(y_max-y_min)
-y_test =  (y_test-y_min)/(y_max-y_min)
+# y_test =  (y_test-y_min)/(y_max-y_min)
 
 
 #the model
@@ -45,6 +45,9 @@ history = model.fit(x_train, y_train, batch_size = 6, epochs=100)
 #predicting 
 y_pred = model.predict(x_test)
 
+#denormalise to get the real world values
+y_pred = y_pred*(y_max-y_min) + y_min
+
 #calculate MSE
-MSE = np.mean(np.sum(np.sqrt((y_test.ravel()-y_pred.ravel())**2)))
+MSE = np.mean((y_test.ravel()-y_pred.ravel())**2)
 print("MSE of the normalised data = ", MSE)
