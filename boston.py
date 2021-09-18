@@ -46,5 +46,5 @@ history = model.fit(x_train, y_train, batch_size = 6, epochs=100)
 y_pred = model.predict(x_test)
 
 #calculate MSE
-MSE = np.sum(np.sqrt((y_test.ravel()-y_pred.ravel())**2))
-print("MSE = ", MSE)
+MSE = np.mean(np.sum(np.sqrt((y_test.ravel()-y_pred.ravel())**2)))
+print("MSE of the normalised data = ", MSE)
