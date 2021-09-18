@@ -26,12 +26,22 @@ def normalise_to_train(x, X, y, Y, key):
     y_train = (y-y_min)/(y_max-y_min)
     
     # particularity: if the outputs are denormalised to calculate the metrics
-    if key == "normal":
+    if key == "normalised":
         y_test = (Y-y_min)/(y_max-y_min)
     else:
         y_test = Y
     
     return x_train, x_test, y_train, y_test, [y_max, y_min]
+
+# function to calculate any of these 3 metrics
+def metric_calc(y_t, y_p, met): 
+    if met=="MSE" or met=="mse":
+        metric = np.mean((np.array(y_t)-y_p)**2)
+    elif met=="MAE" or met=="mae":
+        metric = np.mean(np.abs(np.array(y_t)-y_p))
+    elif met=="RMSE" or met=="rmse":
+        metric = np.sqrt(np.mean((np.array(y_t)-y_p)**2))
+    return metric
 
 boston_dataset = load_boston()
 boston = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)
@@ -53,12 +63,7 @@ aux = correlation_matrix.loc[np.abs(correlation_matrix.loc['Price'])>=0.5, 'Pric
 aux.drop(index='Price', inplace=True)
 
 #-----------------------------------------------------------------------------
-
-#full data
-# data = np.array(boston)
-
-#target is always the same
-target = np.array(boston_t)
+metric = "MAE"
 
 
 # data = corr_data
@@ -88,33 +93,31 @@ plt.plot(history.history['val_loss'])
 plt.grid()
 
 #predicting 
-y_pred = model.predict(x_test)
+y_pred_nn = model.predict(x_test)
 
 #denormalise to get the real world values
-if mode != "normal":
-    y_pred = y_pred*(y_params[0]-y_params[1]) + y_params[1]
+if mode != "normalised":
+    y_pred_nn = y_pred_nn*(y_params[0]-y_params[1]) + y_params[1]
 
 
-#calculate MAE or MSE
-#MSE = np.mean((y_test.ravel()-y_pred.ravel())**2)
-MAE = np.mean(np.abs(y_test.ravel()-y_pred.ravel()))
-print("MAE of the normalised data = ", MAE)
+#calculate and print metric
+res = metric_calc(y_test, y_pred_nn, metric)
+print(metric+" of the data = ", res)
+
+
 
 
 #data with only the highly correlated dat, for the linear regression
 x_train_lin = x_train[aux.index]
 x_test_lin = x_test[aux.index]
 
-
-
-
-
 #linear regression
 lin_model = LinearRegression()
 lin_model.fit(x_train_lin, y_train)
 
-y_predi = lin_model.predict(x_test_lin)
-if mode != "normal":
-    y_predi = y_predi*(y_params[0]-y_params[1]) + y_params[1]
-RMSE = np.mean(np.sqrt((y_test.ravel()-y_predi.ravel())**2))
-print("RMSE of the normalised data = ", RMSE)
+y_pred_lin = lin_model.predict(x_test_lin)
+if mode != "normalised":
+    y_pred_lin = y_pred_lin*(y_params[0]-y_params[1]) + y_params[1]
+    
+res = metric_calc(y_test, y_pred_lin, metric)
+print(metric+" of the data = ", res)
