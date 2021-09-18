@@ -5,7 +5,9 @@ import numpy as np
 # from sklearn.linear_model import LinearRegression
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
+# from tensorflow.keras.callbacks import ModelCheckpoint
 from sklearn.model_selection import train_test_split
+
 
 boston_dataset = load_boston()
 print(boston_dataset.keys())
@@ -33,14 +35,17 @@ y_train = (y_train-y_min)/(y_max-y_min)
 # y_test =  (y_test-y_min)/(y_max-y_min)
 
 
-#the model
+#the callback and model
+# checkpoint_filepath = "./tmp"
+# model_checkpoint_callback = ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, monitor='val_loss', mode='min', save_best_only=True)
+
 model = Sequential()
-model.add(Dense(64, input_dim = 12 , activation = 'tanh'))
+model.add(Dense(64, input_dim = 12 , activation = 'relu'))
 model.add(Dense(6, activation = 'relu'))
-model.add(Dense(1))
+model.add(Dense(1, activation = 'relu'))
 model.compile(loss='mse', optimizer='adam')
 model.summary()
-history = model.fit(x_train, y_train, batch_size = 6, epochs=100)
+history = model.fit(x_train, y_train, batch_size = 6, epochs=100, validation_split=0.125)
 
 #predicting 
 y_pred = model.predict(x_test)
