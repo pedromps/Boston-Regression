@@ -52,26 +52,22 @@ correlation_matrix = full_data.corr().round(2)
 aux = correlation_matrix.loc[np.abs(correlation_matrix.loc['Price'])>=0.5, 'Price']
 aux.drop(index='Price', inplace=True)
 
-#data with only the highly correlated dat
-corr_data = boston[aux.index]
-
+#-----------------------------------------------------------------------------
 
 #full data
-data = np.array(boston)
+# data = np.array(boston)
+
+#target is always the same
 target = np.array(boston_t)
-
-
 
 
 # data = corr_data
 #the value to predict is in the last column
-x_train, x_test, y_train, y_test = train_test_split(data, target, train_size = 0.8)
-
+x_train, x_test, y_train, y_test = train_test_split(boston, boston_t, train_size = 0.8)
 
 #normalise in respect to the training data
-mode = "normal" #<- "normal" to view normalised metrics, any other input for denormalised.
+mode = "n" #<- "normal" to view normalised metrics, any other input for denormalised.
 x_train, x_test, y_train, y_test, y_params = normalise_to_train(x_train, x_test, y_train, y_test, mode)
-
 
 #the callback and model
 # checkpoint_filepath = "./tmp"
@@ -95,7 +91,9 @@ plt.grid()
 y_pred = model.predict(x_test)
 
 #denormalise to get the real world values
-y_pred = y_pred*(y_params[0]-y_params[1]) + y_params[1]
+if mode != "normal":
+    y_pred = y_pred*(y_params[0]-y_params[1]) + y_params[1]
+
 
 #calculate MAE or MSE
 #MSE = np.mean((y_test.ravel()-y_pred.ravel())**2)
@@ -103,11 +101,20 @@ MAE = np.mean(np.abs(y_test.ravel()-y_pred.ravel()))
 print("MAE of the normalised data = ", MAE)
 
 
+#data with only the highly correlated dat, for the linear regression
+x_train_lin = x_train[aux.index]
+x_test_lin = x_test[aux.index]
+
+
+
+
+
 #linear regression
 lin_model = LinearRegression()
-lin_model.fit(x_train, y_train)
+lin_model.fit(x_train_lin, y_train)
 
-y_predi = lin_model.predict(x_test)
-y_predi = y_predi*(y_params[0]-y_params[1]) + y_params[1]
+y_predi = lin_model.predict(x_test_lin)
+if mode != "normal":
+    y_predi = y_predi*(y_params[0]-y_params[1]) + y_params[1]
 RMSE = np.mean(np.sqrt((y_test.ravel()-y_predi.ravel())**2))
 print("RMSE of the normalised data = ", RMSE)
